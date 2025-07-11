@@ -18,24 +18,53 @@ let RecipesService = class RecipesService {
         this.prisma = prisma;
     }
     async findAll(search) {
-        return this.prisma.recipe.findMany({
-            where: search ? { title: { contains: search } } : {},
-            include: { ratings: true },
+        const recipes = await this.prisma.recipe.findMany({
+            where: search
+                ? { title: { contains: search, mode: 'insensitive' } }
+                : {},
+            include: { ratings: { select: { stars: true } } },
+        });
+        return recipes.map(r => {
+            const allStars = r.ratings.map(rt => rt.stars);
+            const avg = allStars.length
+                ? allStars.reduce((sum, s) => sum + s, 0) / allStars.length
+                : 0;
+            return {
+                id: r.id,
+                title: r.title,
+                description: r.description,
+                ingredients: r.ingredients,
+                instructions: r.instructions,
+                imageUrl: r.imageUrl || undefined,
+                authorId: r.authorId,
+                averageRating: parseFloat(avg.toFixed(1)),
+            };
         });
     }
     async findOne(id) {
-        const recipe = await this.prisma.recipe.findUnique({
+        const r = await this.prisma.recipe.findUnique({
             where: { id },
-            include: { ratings: true },
+            include: { ratings: { select: { stars: true } } },
         });
-        if (!recipe)
+        if (!r)
             throw new common_1.NotFoundException('Recipe not found');
-        return recipe;
+        const allStars = r.ratings.map(rt => rt.stars);
+        const avg = allStars.length
+            ? allStars.reduce((sum, s) => sum + s, 0) / allStars.length
+            : 0;
+        return {
+            id: r.id,
+            title: r.title,
+            description: r.description,
+            ingredients: r.ingredients,
+            instructions: r.instructions,
+            imageUrl: r.imageUrl || undefined,
+            authorId: r.authorId,
+            averageRating: parseFloat(avg.toFixed(1)),
+        };
     }
     async create(dto, userId) {
-        return this.prisma.recipe.create({
-            data: { ...dto, authorId: userId },
-        });
+        return this.prisma.recipe.create({ data: { ...dto, authorId: userId } });
     }
     async update(id, dto, userId) {
         const existing = await this.prisma.recipe.findUnique({ where: { id } });
@@ -43,10 +72,7 @@ let RecipesService = class RecipesService {
             throw new common_1.NotFoundException('Recipe not found');
         if (existing.authorId !== userId)
             throw new common_1.ForbiddenException();
-        return this.prisma.recipe.update({
-            where: { id },
-            data: dto,
-        });
+        return this.prisma.recipe.update({ where: { id }, data: dto });
     }
     async remove(id, userId) {
         const existing = await this.prisma.recipe.findUnique({ where: { id } });
@@ -55,6 +81,24 @@ let RecipesService = class RecipesService {
         if (existing.authorId !== userId)
             throw new common_1.ForbiddenException();
         return this.prisma.recipe.delete({ where: { id } });
+    }
+    async rate(recipeId, stars, userId) {
+        const recipe = await this.prisma.recipe.findUnique({ where: { id: recipeId } });
+        if (!recipe)
+            throw new common_1.NotFoundException('Recipe not found');
+        return this.prisma.rating.upsert({
+            where: { userId_recipeId: { userId, recipeId } },
+            update: { stars },
+            create: { stars, userId, recipeId },
+        });
+    }
+    async setImageUrl(id, imageUrl, userId) {
+        const existing = await this.prisma.recipe.findUnique({ where: { id } });
+        if (!existing)
+            throw new common_1.NotFoundException('Recipe not found');
+        if (existing.authorId !== userId)
+            throw new common_1.ForbiddenException();
+        return this.prisma.recipe.update({ where: { id }, data: { imageUrl } });
     }
 };
 exports.RecipesService = RecipesService;

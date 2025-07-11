@@ -5,41 +5,32 @@ import { UpdateRecipeDto } from './dto/update-recipe.dto';
 export declare class RecipesController {
     private readonly recipesService;
     constructor(recipesService: RecipesService);
-    findAll(search?: string): Promise<({
-        ratings: {
-            id: number;
-            stars: number;
-            userId: number;
-            recipeId: number;
-        }[];
-    } & {
+    findAll(search?: string): Promise<{
         id: number;
         title: string;
         description: string | null;
         ingredients: import("@prisma/client/runtime/library").JsonValue;
         instructions: string;
+        imageUrl: string | undefined;
         authorId: number;
-    })[]>;
+        averageRating: number;
+    }[]>;
     findOne(id: string): Promise<{
-        ratings: {
-            id: number;
-            stars: number;
-            userId: number;
-            recipeId: number;
-        }[];
-    } & {
         id: number;
         title: string;
         description: string | null;
         ingredients: import("@prisma/client/runtime/library").JsonValue;
         instructions: string;
+        imageUrl: string | undefined;
         authorId: number;
+        averageRating: number;
     }>;
     create(dto: CreateRecipeDto, req: Request): Promise<{
         id: number;
         title: string;
         description: string | null;
         ingredients: import("@prisma/client/runtime/library").JsonValue;
+        imageUrl: string | null;
         instructions: string;
         authorId: number;
     }>;
@@ -48,6 +39,7 @@ export declare class RecipesController {
         title: string;
         description: string | null;
         ingredients: import("@prisma/client/runtime/library").JsonValue;
+        imageUrl: string | null;
         instructions: string;
         authorId: number;
     }>;
@@ -56,7 +48,14 @@ export declare class RecipesController {
         title: string;
         description: string | null;
         ingredients: import("@prisma/client/runtime/library").JsonValue;
+        imageUrl: string | null;
         instructions: string;
         authorId: number;
+    }>;
+    rate(id: string, stars: number, req: Request): Promise<{
+        id: number;
+        stars: number;
+        userId: number;
+        recipeId: number;
     }>;
 }
