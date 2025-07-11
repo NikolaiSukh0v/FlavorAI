@@ -46,6 +46,28 @@ let RecipesController = class RecipesController {
         const urlPath = `/uploads/${file.filename}`;
         return this.recipesService.setImageUrl(+id, urlPath, req.user.userId);
     }
+    async suggest(id) {
+        const recipe = await this.recipesService.findOne(+id);
+        const prompt = `
+Suggest creative twists, serving ideas or variations for this recipe:
+Title: ${recipe.title}
+Ingredients: ${recipe.ingredients.join(', ')}
+Instructions: ${recipe.instructions}
+`;
+        const resp = await fetch('https://gemma.googleapis.com/v1/models/text-bison-001:generateText', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${process.env.GEMMA_API_KEY}`,
+            },
+            body: JSON.stringify({ prompt: { text: prompt } }),
+        });
+        const json = await resp.json();
+        return {
+            suggestion: json.candidates?.[0]?.output ||
+                'Hmm, no suggestions this time—try again later!',
+        };
+    }
 };
 exports.RecipesController = RecipesController;
 __decorate([
@@ -118,6 +140,14 @@ __decorate([
     __metadata("design:paramtypes", [String, Object, Object]),
     __metadata("design:returntype", Promise)
 ], RecipesController.prototype, "uploadImage", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)(':id/suggest'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], RecipesController.prototype, "suggest", null);
 exports.RecipesController = RecipesController = __decorate([
     (0, common_1.Controller)('recipes'),
     __metadata("design:paramtypes", [recipes_service_1.RecipesService])

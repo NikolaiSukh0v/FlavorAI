@@ -61,4 +61,7 @@ export declare class RecipesController {
         instructions: string;
         authorId: number;
     }>;
+    suggest(id: string): Promise<{
+        suggestion: any;
+    }>;
 }
