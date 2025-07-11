@@ -61,7 +61,16 @@ export class RecipesController {
   remove(@Param('id') id: string, @Req() req: Request) {
     return this.recipesService.remove(+id, (req.user as any).userId);
   }
-
+ @UseGuards(JwtAuthGuard)
+  @Post(':id/rate')
+  rate(
+    @Param('id') id: string,
+    @Body('stars') stars: number,
+    @Req() req: Request
+  ) {
+    const userId = (req.user as any).userId;
+    return this.recipesService.rate(+id, stars, userId);
+  }
   @UseGuards(JwtAuthGuard)
   @Post(':id/image')
   @UseInterceptors(
@@ -93,33 +102,5 @@ export class RecipesController {
       urlPath,
       (req.user as any).userId,
     );
-  }
-   @UseGuards(JwtAuthGuard)
-  @Get(':id/suggest')
-  async suggest(@Param('id') id: string) {
-    const recipe = await this.recipesService.findOne(+id);
-    const prompt = `
-Suggest creative twists, serving ideas or variations for this recipe:
-Title: ${recipe.title}
-Ingredients: ${recipe.ingredients.join(', ')}
-Instructions: ${recipe.instructions}
-`;
-  const resp = await fetch(
-      'https://gemma.googleapis.com/v1/models/text-bison-001:generateText',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env.GEMMA_API_KEY}`,
-        },
-        body: JSON.stringify({ prompt: { text: prompt } }),
-      },
-    );
-    const json = await resp.json();
-    return {
-      suggestion:
-        json.candidates?.[0]?.output ||
-        'Hmm, no suggestions this time—try again later!',
-    };
   }
 }

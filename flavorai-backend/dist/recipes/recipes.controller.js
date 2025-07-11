@@ -42,31 +42,13 @@ let RecipesController = class RecipesController {
     remove(id, req) {
         return this.recipesService.remove(+id, req.user.userId);
     }
+    rate(id, stars, req) {
+        const userId = req.user.userId;
+        return this.recipesService.rate(+id, stars, userId);
+    }
     async uploadImage(id, file, req) {
         const urlPath = `/uploads/${file.filename}`;
         return this.recipesService.setImageUrl(+id, urlPath, req.user.userId);
-    }
-    async suggest(id) {
-        const recipe = await this.recipesService.findOne(+id);
-        const prompt = `
-Suggest creative twists, serving ideas or variations for this recipe:
-Title: ${recipe.title}
-Ingredients: ${recipe.ingredients.join(', ')}
-Instructions: ${recipe.instructions}
-`;
-        const resp = await fetch('https://gemma.googleapis.com/v1/models/text-bison-001:generateText', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${process.env.GEMMA_API_KEY}`,
-            },
-            body: JSON.stringify({ prompt: { text: prompt } }),
-        });
-        const json = await resp.json();
-        return {
-            suggestion: json.candidates?.[0]?.output ||
-                'Hmm, no suggestions this time—try again later!',
-        };
     }
 };
 exports.RecipesController = RecipesController;
@@ -116,6 +98,16 @@ __decorate([
 ], RecipesController.prototype, "remove", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)(':id/rate'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)('stars')),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Number, Object]),
+    __metadata("design:returntype", void 0)
+], RecipesController.prototype, "rate", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Post)(':id/image'),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('image', {
         storage: (0, multer_1.diskStorage)({
@@ -140,14 +132,6 @@ __decorate([
     __metadata("design:paramtypes", [String, Object, Object]),
     __metadata("design:returntype", Promise)
 ], RecipesController.prototype, "uploadImage", null);
-__decorate([
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.Get)(':id/suggest'),
-    __param(0, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", Promise)
-], RecipesController.prototype, "suggest", null);
 exports.RecipesController = RecipesController = __decorate([
     (0, common_1.Controller)('recipes'),
     __metadata("design:paramtypes", [recipes_service_1.RecipesService])

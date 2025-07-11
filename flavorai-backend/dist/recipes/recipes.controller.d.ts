@@ -52,6 +52,12 @@ export declare class RecipesController {
         instructions: string;
         authorId: number;
     }>;
+    rate(id: string, stars: number, req: Request): Promise<{
+        id: number;
+        stars: number;
+        userId: number;
+        recipeId: number;
+    }>;
     uploadImage(id: string, file: Express.Multer.File, req: Request): Promise<{
         id: number;
         title: string;
@@ -60,8 +66,5 @@ export declare class RecipesController {
         imageUrl: string | null;
         instructions: string;
         authorId: number;
-    }>;
-    suggest(id: string): Promise<{
-        suggestion: any;
     }>;
 }
