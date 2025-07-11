@@ -80,6 +80,7 @@ let RecipesService = class RecipesService {
             throw new common_1.NotFoundException('Recipe not found');
         if (existing.authorId !== userId)
             throw new common_1.ForbiddenException();
+        await this.prisma.rating.deleteMany({ where: { recipeId: id } });
         return this.prisma.recipe.delete({ where: { id } });
     }
     async rate(recipeId, stars, userId) {

@@ -1,10 +1,11 @@
+
 'use client';
 
 import Link from 'next/link';
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import Rating from '@mui/material/Rating';
 import api from '@/lib/api';
-import { AuthContext } from '@/context/AuthContext';
+import { AuthContext } from '../context/AuthContext';
 
 interface RecipeCardProps {
   recipe: {
@@ -17,10 +18,18 @@ interface RecipeCardProps {
 }
 
 export default function RecipeCard({ recipe }: RecipeCardProps) {
+  const [imageSrc, setImageSrc] = useState<string | undefined>(undefined);
   const auth = useContext(AuthContext);
   const user = auth?.user;
   const [value, setValue] = useState<number>(recipe.averageRating ?? 0);
   const [hover, setHover] = useState<number>(-1);
+
+  // Build full image URL on mount or when recipe.imageUrl changes
+  useEffect(() => {
+    if (recipe.imageUrl) {
+      setImageSrc(`${api.defaults.baseURL}${recipe.imageUrl}`);
+    }
+  }, [recipe.imageUrl]);
 
   const handleRatingChange = async (_: any, newValue: number | null) => {
     if (!user || newValue === null) return;
@@ -35,15 +44,14 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
   return (
     <div className="group block overflow-hidden rounded-2xl bg-white shadow-lg transition-shadow duration-300 hover:shadow-2xl">
       <Link href={`/recipes/${recipe.id}`}> 
-        {recipe.imageUrl && (
+        {imageSrc && (
           <img
-            src={recipe.imageUrl}
+            src={imageSrc}
             alt={recipe.title}
             className="h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         )}
       </Link>
-
       <div className="p-6">
         <Link href={`/recipes/${recipe.id}`}> 
           <h3 className="mb-2 text-xl font-semibold text-gray-800 transition-colors duration-200 group-hover:text-blue-600">
@@ -69,5 +77,5 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
         </div>
       </div>
     </div>
-  );
+    );
 }

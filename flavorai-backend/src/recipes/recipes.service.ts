@@ -68,10 +68,11 @@ export class RecipesService {
     return this.prisma.recipe.update({ where: { id }, data: dto });
   }
 
-  async remove(id: number, userId: number) {
+ async remove(id: number, userId: number) {
     const existing = await this.prisma.recipe.findUnique({ where: { id } });
     if (!existing) throw new NotFoundException('Recipe not found');
     if (existing.authorId !== userId) throw new ForbiddenException();
+    await this.prisma.rating.deleteMany({ where: { recipeId: id } });
     return this.prisma.recipe.delete({ where: { id } });
   }
 

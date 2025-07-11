@@ -52,10 +52,13 @@ export declare class RecipesController {
         instructions: string;
         authorId: number;
     }>;
-    rate(id: string, stars: number, req: Request): Promise<{
+    uploadImage(id: string, file: Express.Multer.File, req: Request): Promise<{
         id: number;
-        stars: number;
-        userId: number;
-        recipeId: number;
+        title: string;
+        description: string | null;
+        ingredients: import("@prisma/client/runtime/library").JsonValue;
+        imageUrl: string | null;
+        instructions: string;
+        authorId: number;
     }>;
 }

@@ -14,6 +14,9 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RecipesController = void 0;
 const common_1 = require("@nestjs/common");
+const platform_express_1 = require("@nestjs/platform-express");
+const multer_1 = require("multer");
+const path_1 = require("path");
 const recipes_service_1 = require("./recipes.service");
 const create_recipe_dto_1 = require("./dto/create-recipe.dto");
 const update_recipe_dto_1 = require("./dto/update-recipe.dto");
@@ -39,9 +42,9 @@ let RecipesController = class RecipesController {
     remove(id, req) {
         return this.recipesService.remove(+id, req.user.userId);
     }
-    rate(id, stars, req) {
-        const userId = req.user.userId;
-        return this.recipesService.rate(+id, stars, userId);
+    async uploadImage(id, file, req) {
+        const urlPath = `/uploads/${file.filename}`;
+        return this.recipesService.setImageUrl(+id, urlPath, req.user.userId);
     }
 };
 exports.RecipesController = RecipesController;
@@ -91,14 +94,30 @@ __decorate([
 ], RecipesController.prototype, "remove", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.Post)(':id/rate'),
+    (0, common_1.Post)(':id/image'),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('image', {
+        storage: (0, multer_1.diskStorage)({
+            destination: './public',
+            filename: (_req, file, cb) => {
+                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+                const ext = (0, path_1.extname)(file.originalname);
+                cb(null, `img-${uniqueSuffix}${ext}`);
+            },
+        }),
+        fileFilter: (_req, file, cb) => {
+            if (!file.mimetype.startsWith('image/')) {
+                return cb(new Error('Only images allowed'), false);
+            }
+            cb(null, true);
+        },
+    })),
     __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Body)('stars')),
+    __param(1, (0, common_1.UploadedFile)()),
     __param(2, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Number, Object]),
-    __metadata("design:returntype", void 0)
-], RecipesController.prototype, "rate", null);
+    __metadata("design:paramtypes", [String, Object, Object]),
+    __metadata("design:returntype", Promise)
+], RecipesController.prototype, "uploadImage", null);
 exports.RecipesController = RecipesController = __decorate([
     (0, common_1.Controller)('recipes'),
     __metadata("design:paramtypes", [recipes_service_1.RecipesService])
