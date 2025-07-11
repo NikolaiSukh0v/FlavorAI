@@ -16,7 +16,7 @@ The repository is structured into two folders:
 
 ## Backend Setup (NestJS)
 
-1. **Create **`` in `flavorai-backend`:
+1. Create .env file in /flavorai-frontend:
 
    ```env
    DATABASE_URL=postgresql://<DB_USER>:<DB_PASS>@localhost:5432/flavorai
