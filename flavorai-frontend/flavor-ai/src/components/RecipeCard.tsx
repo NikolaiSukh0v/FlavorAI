@@ -1,21 +1,53 @@
 'use client';
+
+import Link from 'next/link';
 import Rating from '@mui/material/Rating';
 
-export default function RecipeCard({RecipeName, RecipeDescription, rate}: {RecipeName?: string, RecipeDescription?: string, rate?: number}) {
+interface RecipeCardProps {
+  recipe: {
+    id: number;
+    title: string;
+    description?: string;
+    averageRating?: number;
+    imageUrl?: string;
+  };
+}
 
-
+export default function RecipeCard({ recipe }: RecipeCardProps) {
   return (
-   <div>
-    <a href="#" className="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-100 dark:bg-gray-500 dark:border-gray-700 dark:hover:bg-gray-700">
-<h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{RecipeName}</h5>
-<p className="font-normal text-gray-700 dark:text-gray-400">{RecipeDescription}</p>
-<Rating
-  name="read-only"
-  value={4}
-  readOnly
-  precision={0.5}
-/>
-</a>
-   </div>
-  );
+    <Link
+      href={`/recipes/${recipe.id}`}
+      className="group block overflow-hidden rounded-2xl bg-white shadow-lg transition-shadow duration-300 hover:shadow-2xl"
+    >
+      {recipe.imageUrl && (
+        <img
+          src={recipe.imageUrl}
+          alt={recipe.title}
+          className="h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105"
+        />
+      )}
+
+      <div className="p-6">
+        <h3 className="mb-2 text-xl font-semibold text-gray-800 transition-colors duration-200 group-hover:text-blue-600">
+          {recipe.title}
+        </h3>
+
+        <p className="mb-4 text-gray-600 line-clamp-3">
+          {recipe.description}
+        </p>
+
+        <div className="flex items-center justify-between">
+          <Rating
+            name="read-only"
+            value={recipe.averageRating ?? 0}
+            precision={0.5}
+            readOnly
+          />
+          <span className="text-sm font-medium text-gray-500">
+            {(recipe.averageRating ?? 0).toFixed(1)}
+          </span>
+        </div>
+      </div>
+    </Link>
+);
 }

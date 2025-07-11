@@ -15,8 +15,8 @@ let RecipesModule = class RecipesModule {
 exports.RecipesModule = RecipesModule;
 exports.RecipesModule = RecipesModule = __decorate([
     (0, common_1.Module)({
+        controllers: [recipes_controller_1.RecipesController],
         providers: [recipes_service_1.RecipesService],
-        controllers: [recipes_controller_1.RecipesController]
     })
 ], RecipesModule);
 //# sourceMappingURL=recipes.module.js.map

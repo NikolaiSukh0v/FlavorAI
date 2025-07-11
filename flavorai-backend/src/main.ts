@@ -9,6 +9,10 @@ async function bootstrap() {
     whitelist: true,
     transform: true,     
   }));
-  await app.listen(3000);
+   app.enableCors({
+    origin: ['http://localhost:3000', 'http://localhost:3001'], 
+    credentials: true,
+  });
+  await app.listen(4000);
 }
 bootstrap();
